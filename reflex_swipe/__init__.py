@@ -1,11 +1,11 @@
 """Swipeable component."""
 
-from typing import Literal, Optional, Tuple, TypedDict, Union
+from typing import Literal, TypedDict
 
 import reflex as rx
 from reflex.components.component import StatefulComponent
 from reflex.constants.compiler import Hooks, Imports
-from reflex.event import BASE_STATE, EventType, no_args_event_spec
+from reflex.event import EventType, no_args_event_spec
 from reflex.utils.format import to_camel_case
 from reflex.utils.imports import ImportDict, ImportVar
 from reflex.vars import FunctionStringVar, Var, get_unique_variable_name
@@ -19,7 +19,7 @@ class SwipeEvent(TypedDict):
     dir: Literal["Left", "Right", "Up", "Down"]
 
     # initial swipe [x,y]
-    initial: Tuple[float, float]
+    initial: tuple[float, float]
 
     # true for the first event of a tracked swipe
     first: bool
@@ -40,25 +40,24 @@ class SwipeEvent(TypedDict):
     velocity: float
 
     # [ deltaX/time, deltaY/time] - velocity per axis
-    vxvy: Tuple[float, float]
+    vxvy: tuple[float, float]
 
 
-def swipe_event_data_spec(ev: Var[dict]) -> Tuple[Var[SwipeEvent]]:
+def swipe_event_data_spec(ev: Var[dict]) -> tuple[Var[SwipeEvent]]:
     """Create a swipe event data spec."""
-    return (
-        Var.create(
-            dict(
-                dir=ev.dir,
-                initial=ev.initial,
-                first=ev.first,
-                delta_x=ev.deltaX,
-                delta_y=ev.deltaY,
-                abs_x=ev.absX,
-                abs_y=ev.absY,
-                velocity=ev.velocity,
-                vxvy=ev.vxvy,
-            )
-        ),
+    ev = ev.to(dict)
+    return Var.create(  # pyright: ignore[reportReturnType]
+        {
+            "dir": ev.dir,
+            "initial": ev.initial,
+            "first": ev.first,
+            "delta_x": ev.deltaX,
+            "delta_y": ev.deltaY,
+            "abs_x": ev.absX,
+            "abs_y": ev.absY,
+            "velocity": ev.velocity,
+            "vxvy": ev.vxvy,
+        }
     )
 
 
@@ -228,7 +227,7 @@ class Swipeable(rx.Component):
         )
 
         component.special_props.append(
-            Var(f"{{...{unique_name}}}", _var_type=dict, _var_data=var_data)
+            Var(unique_name, _var_type=dict, _var_data=var_data)
         )
 
         return component
@@ -236,36 +235,22 @@ class Swipeable(rx.Component):
 
 def swipeable(
     *children,
-    delta: Optional[Union[float, Var[float]]] = None,
-    prevent_scroll_on_swipe: Optional[Union[bool, Var[bool]]] = None,
-    track_touch: Optional[Union[bool, Var[bool]]] = None,
-    track_mouse: Optional[Union[bool, Var[bool]]] = None,
-    rotation_angle: Optional[Union[float, Var[float]]] = None,
-    swipe_duration: Optional[Union[float, Var[float]]] = None,
-    on_swiped: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiped_left: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiped_right: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiped_up: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiped_down: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiped_start: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_swiping: Optional[
-        Union[EventType[[SwipeEvent], BASE_STATE], EventType[[], BASE_STATE]]
-    ] = None,
-    on_tap: Optional[EventType[[], BASE_STATE]] = None,
-    on_touch_start_or_mouse_down: Optional[EventType[[], BASE_STATE]] = None,
-    on_touch_end_or_mouse_up: Optional[EventType[[], BASE_STATE]] = None,
+    delta: float | Var[float] | None = None,
+    prevent_scroll_on_swipe: bool | Var[bool] | None = None,
+    track_touch: bool | Var[bool] | None = None,
+    track_mouse: bool | Var[bool] | None = None,
+    rotation_angle: float | Var[float] | None = None,
+    swipe_duration: float | Var[float] | None = None,
+    on_swiped: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiped_left: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiped_right: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiped_up: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiped_down: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiped_start: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_swiping: EventType[SwipeEvent] | EventType[()] | None = None,
+    on_tap: EventType[()] | None = None,
+    on_touch_start_or_mouse_down: EventType[()] | None = None,
+    on_touch_end_or_mouse_up: EventType[()] | None = None,
     **props,
 ) -> rx.Component:
     """Create a swipeable component.
