@@ -46,18 +46,20 @@ class SwipeEvent(TypedDict):
 def swipe_event_data_spec(ev: Var[dict]) -> tuple[Var[SwipeEvent]]:
     """Create a swipe event data spec."""
     ev = ev.to(dict)
-    return Var.create(  # pyright: ignore[reportReturnType]
-        {
-            "dir": ev.dir,
-            "initial": ev.initial,
-            "first": ev.first,
-            "delta_x": ev.deltaX,
-            "delta_y": ev.deltaY,
-            "abs_x": ev.absX,
-            "abs_y": ev.absY,
-            "velocity": ev.velocity,
-            "vxvy": ev.vxvy,
-        }
+    return (
+        Var.create(  # pyright: ignore[reportReturnType]
+            {
+                "dir": ev.dir,
+                "initial": ev.initial,
+                "first": ev.first,
+                "delta_x": ev.deltaX,
+                "delta_y": ev.deltaY,
+                "abs_x": ev.absX,
+                "abs_y": ev.absY,
+                "velocity": ev.velocity,
+                "vxvy": ev.vxvy,
+            }
+        ),
     )
 
 
